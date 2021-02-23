@@ -7,15 +7,18 @@ import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.samsung.android.knox.EnterpriseDeviceManager;
+import com.samsung.android.knox.custom.CustomDeviceManager;
 import com.samsung.android.knox.restriction.RestrictionPolicy;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG2 = "MAIN_ACTIVITY: ";
     private static final String CHANNEL_ID = "RUNNING";
     public static final int JOB_ID = 0x151515;
+    public static final boolean USE_KNOX = false;
 
     //KNOX
     private static final int DEVICE_ADMIN_ADD_RESULT_ENABLE = 1;
@@ -34,10 +38,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //SAMSUNG KNOX
-        if (Build.BRAND.equals("samsung")) {
-            mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-            mDeviceAdmin = new ComponentName(MainActivity.this, AdminReceiver.class);
+        if (USE_KNOX) {
+            //SAMSUNG KNOX
+            if (Build.BRAND.equals("samsung")) {
+                mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+                mDeviceAdmin = new ComponentName(MainActivity.this, AdminReceiver.class);
+            }
         }
 
     }
@@ -48,9 +54,11 @@ public class MainActivity extends AppCompatActivity {
 
         boolean knox = true;
         boolean da = true;
-        if (Build.BRAND.equals("samsung")) {
-            knox = checkKnox();
-            da = mDPM.isAdminActive(mDeviceAdmin);
+        if (USE_KNOX) {
+            if (Build.BRAND.equals("samsung")) {
+                knox = checkKnox();
+                da = mDPM.isAdminActive(mDeviceAdmin);
+            }
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || !da || !knox) {
@@ -60,9 +68,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             createNotificationChannel();
 
-            Intent s = new Intent(this,XCPButtonService.class);
+            Intent s = new Intent(this, XCPButtonService.class);
             startForegroundService(s);
-
             this.finish();
         }
 

@@ -28,6 +28,7 @@ public class XCPButtonService extends Service {
     public static final String TAG2 = "XCP_BUTTON_SERVICE: ";
     private static final String CHANNEL_ID = "RUNNING";
     public static final int JOB_ID = 0x151515;
+    public static final boolean USE_KNOX = false;
 
     Context c;
 
@@ -77,20 +78,29 @@ public class XCPButtonService extends Service {
 
         Log.w(TAG, TAG2 + "ON_START_COMMAND");
 
-        cdm = CustomDeviceManager.getInstance();
-        String permission = "com.samsung.android.knox.permission.KNOX_CUSTOM_SYSTEM";
-        if(cdm.checkEnterprisePermission(permission)) {
-            Log.w(TAG, TAG2 + "KNOX_CUSTOM_SETTING_PERMISSION_GRANTED");
-        } else {
-            Log.w(TAG, TAG2 + "KNOX_CUSTOM_SETTING_PERMISSION_DENIED");
-        }
+        if (USE_KNOX) {
 
-        kcsm = cdm.getSystemManager();
-        kcsm.setHardKeyIntentState(CustomDeviceManager.ON, KPCCManager.KEYCODE_PTT,(CustomDeviceManager.KEY_ACTION_DOWN | CustomDeviceManager.KEY_ACTION_UP),CustomDeviceManager.ON);
-        kcsm.setHardKeyIntentState(CustomDeviceManager.ON,KPCCManager.KEYCODE_EMERGENCY,(CustomDeviceManager.KEY_ACTION_DOWN | CustomDeviceManager.KEY_ACTION_UP),CustomDeviceManager.ON);
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(cdm.ACTION_HARD_KEY_REPORT);
-        registerReceiver(broadcastReceiver,intentFilter);
+            cdm = CustomDeviceManager.getInstance();
+            String permission = "com.samsung.android.knox.permission.KNOX_CUSTOM_SYSTEM";
+            if (cdm.checkEnterprisePermission(permission)) {
+                Log.w(TAG, TAG2 + "KNOX_CUSTOM_SETTING_PERMISSION_GRANTED");
+            } else {
+                Log.w(TAG, TAG2 + "KNOX_CUSTOM_SETTING_PERMISSION_DENIED");
+            }
+
+            kcsm = cdm.getSystemManager();
+            kcsm.setHardKeyIntentState(CustomDeviceManager.ON, KPCCManager.KEYCODE_PTT, (CustomDeviceManager.KEY_ACTION_DOWN | CustomDeviceManager.KEY_ACTION_UP), CustomDeviceManager.ON);
+            kcsm.setHardKeyIntentState(CustomDeviceManager.ON, KPCCManager.KEYCODE_EMERGENCY, (CustomDeviceManager.KEY_ACTION_DOWN | CustomDeviceManager.KEY_ACTION_UP), CustomDeviceManager.ON);
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(cdm.ACTION_HARD_KEY_REPORT);
+            registerReceiver(broadcastReceiver, intentFilter);
+        } else {
+            XCPButtonReceiver xcpButtonReceiver = new XCPButtonReceiver();
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction("com.edtest.xcpbuttonlistener.intent.action.PTT_PRESS");
+            intentFilter.addAction("com.edtest.xcpbuttonlistener.intent.action.PTT_RELEASE");
+            registerReceiver(xcpButtonReceiver,intentFilter);
+        }
 
         exec = new ScheduledThreadPoolExecutor(1);
 

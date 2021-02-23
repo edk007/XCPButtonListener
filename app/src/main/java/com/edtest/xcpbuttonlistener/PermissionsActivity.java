@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class PermissionsActivity extends AppCompatActivity {
     public static final String TAG = "XCP_BUTTON_SERVICE";
     public static final String TAG2 = "PERMISSIONS_SCREEN: ";
+    public static final boolean USE_KNOX = false;
 
     Button locationButton;
     Button deviceAdminButton;
@@ -59,7 +60,7 @@ public class PermissionsActivity extends AppCompatActivity {
         knoxLicenseButton = findViewById(R.id.knoxLicenseButton);
         closeButton = findViewById(R.id.closeButton);
 
-        if (Build.BRAND.equals("samsung")) {
+        if (Build.BRAND.equals("samsung") && USE_KNOX) {
             deviceAdminButton.setEnabled(true);
             knoxLicenseButton.setEnabled(true);
             mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
@@ -74,6 +75,7 @@ public class PermissionsActivity extends AppCompatActivity {
 
         activity = this;
 
+        //This app does not even need permissions for location - this is just a test for deploying apps to ensure MDM is granting permissiosn properly for another use case
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             //we have permission - disable this button
             locationButton.setElevation(0);

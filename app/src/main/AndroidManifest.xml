@@ -49,6 +49,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".XCPButtonReceiver"
+            android:permission="com.samsung.android.knox.permission.KNOX_CUSTOM_SETTING"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.edtest.xcpbuttonlistener.intent.action.PTT_PRESS" />
+                <action android:name="com.edtest.xcpbuttonlistener.intent.action.PTT_RELEASE" />
+            </intent-filter>
+        </receiver>
+
         <service android:name=".XCPButtonService"
             android:permission="android.permission.BIND_JOB_SERVICE">
         </service>
